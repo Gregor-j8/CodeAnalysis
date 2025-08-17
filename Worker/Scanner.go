@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -24,14 +25,13 @@ func Scan(path string) {
 			if err != nil {
 				return err
 			}
-			if entry.IsDir() {
-				return nil
+			if entry.IsDir() && (entry.Name() == "node_modules" || entry.IsDir() && strings.HasPrefix(entry.Name(), ".")) {
+				return filepath.SkipDir
 			}
 			analyzeFile(filePath)
 			return nil
 		})
 		cobra.CheckErr(err)
-
 	} else {
 		analyzeFile(path)
 	}
@@ -42,11 +42,15 @@ func analyzeFile(path string) {
 	switch ext {
 	case ".go":
 		fmt.Println("run Go analysis on file:", path)
+	case ".cs":
+		fmt.Println("run Go analysis on file:", path)
 	case ".py":
 		fmt.Println("run Python analysis on file:", path)
 	case ".js", ".ts":
 		fmt.Println("run JavaScript/TypeScript analysis on file:", path)
+	case ".jsx", ".tsx":
+		fmt.Println("run React JavaScript/TypeScript analysis on file:", path)
 	default:
-		fmt.Printf("Skipping unsupported file type: %s\n", path)
+		return
 	}
 }
